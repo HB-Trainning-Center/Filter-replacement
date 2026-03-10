@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>필터 교체운전 시뮬레이션 (종합 점수 및 다중 랭킹)</title>
+    <title>필터 교체운전 시뮬레이션 (모바일 반응형 랭킹)</title>
     <style>
         body { font-family: 'Malgun Gothic', sans-serif; background-color: #eef2f5; padding: 15px; margin: 0; box-sizing: border-box; }
         h1 { text-align: center; color: #2c3e50; font-size: clamp(20px, 5vw, 26px); margin: 10px 0 20px 0; }
@@ -18,7 +18,7 @@
         .btn-instructor { background: #2c3e50; } .btn-instructor:hover { background: #1a252f; }
 
         /* 랭킹 대시보드 */
-        .rank-box { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); max-width: 800px; width: 95%; margin: auto; display: none; }
+        .rank-box { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); max-width: 800px; width: 95%; margin: auto; display: none; box-sizing: border-box; }
         .rank-box h2 { text-align: center; color: #2c3e50; margin-top: 0; margin-bottom: 20px; }
         
         .instructor-tools { background: #fadbd8; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: none; justify-content: space-between; align-items: center; border: 1px solid #e74c3c; }
@@ -34,13 +34,15 @@
         .rank-tabs button { flex: 1; padding: 10px 5px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 13px; background: #ecf0f1; color: #2c3e50; transition: 0.2s; word-break: keep-all;}
         .rank-tabs button.active { background: #3498db; color: white; }
         
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        /* 표 반응형 컨테이너 */
+        .table-responsive { width: 100%; overflow-x: auto; margin-top: 10px; border-radius: 6px; }
+        table { width: 100%; border-collapse: collapse; min-width: 450px; }
         th, td { padding: 10px 5px; border-bottom: 1px solid #ecf0f1; text-align: center; font-size: 14px; }
-        th { background: #34495e; color: white; font-size: 13px; }
+        th { background: #34495e; color: white; font-size: 13px; white-space: nowrap; }
         tr:nth-child(even) { background: #f9f9f9; }
         .score-col { font-weight: bold; color: #e74c3c; }
         
-        .rank-header-controls { display: flex; justify-content: space-between; margin-top: 20px; }
+        .rank-header-controls { display: flex; justify-content: space-between; margin-top: 20px; gap: 10px; }
 
         /* 시뮬레이터 본체 스타일 */
         .dashboard { width: 100%; max-width: 1000px; margin: 0 auto 15px; display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); flex-wrap: wrap; gap: 10px; box-sizing: border-box; }
@@ -89,11 +91,27 @@
         .error-desc { font-weight: bold; color: #c0392b; background: #fadbd8; padding: 15px; border-radius: 6px; margin: 15px 0; font-size: 14px; line-height: 1.5; }
         .btn { padding: 12px 20px; font-size: 16px; font-weight: bold; cursor: pointer; border: none; border-radius: 6px; width: 100%; transition: background 0.2s; }
         
+        /* 모바일 화면(600px 이하) 전용 반응형 레이아웃 */
+        @media screen and (max-width: 600px) {
+            .filter-group { flex-direction: column; align-items: stretch; gap: 5px; }
+            .filter-label { margin-bottom: 2px; }
+            .rank-tabs { width: 100%; }
+            .rank-tabs button { font-size: 12px; padding: 8px; }
+            
+            .instructor-tools { flex-direction: column; align-items: flex-start; gap: 10px; }
+            .tool-btns { display: flex; width: 100%; gap: 8px; }
+            .tool-btns button { flex: 1; margin: 0; font-size: 12px; padding: 10px; }
+
+            .rank-header-controls { flex-direction: column; }
+            .rank-header-controls button { width: 100%; padding: 10px; }
+            
+            .rank-box { padding: 15px; }
+        }
+
+        /* 태블릿 화면(1120px 이하) 레이아웃 */
         @media screen and (max-width: 1120px) {
             .main-container { flex-direction: column; align-items: center; }
             .pid-wrapper, .log-box { width: 100%; }
-            .rank-tabs { flex-direction: column; gap: 4px; }
-            .filter-group { flex-direction: column; align-items: flex-start; }
         }
     </style>
     
@@ -141,21 +159,23 @@
                 </div>
             </div>
 
-            <table id="rankTable">
-                <thead>
-                    <tr><th>순위</th><th>이름</th><th>점수</th><th>기록</th><th>시도</th></tr>
-                </thead>
-                <tbody id="rankBody">
-                    <tr><td colspan="5">데이터를 불러오는 중입니다...</td></tr>
-                </tbody>
-            </table>
+            <div class="table-responsive">
+                <table id="rankTable">
+                    <thead>
+                        <tr><th>순위</th><th>이름</th><th>점수</th><th>기록</th><th>시도</th></tr>
+                    </thead>
+                    <tbody id="rankBody">
+                        <tr><td colspan="5">데이터를 불러오는 중입니다...</td></tr>
+                    </tbody>
+                </table>
+            </div>
 
             <div class="rank-header-controls">
-                <button class="btn-logout" style="background:#7f8c8d;" onclick="window.fetchRankings()">🔄 새로고침</button>
+                <button class="btn-logout" style="background:#7f8c8d;" onclick="window.fetchRankings()">🔄 목록 새로고침</button>
                 <button class="btn-logout" onclick="window.logout()">나가기 (로그아웃)</button>
             </div>
 
-            <div id="studentRetryDiv" style="display:none; margin-top: 10px;">
+            <div id="studentRetryDiv" style="display:none; margin-top: 15px;">
                 <button class="btn" style="background:#27ae60; color:white; width:100%;" onclick="window.returnToSimulation()">🎮 시뮬레이션 다시 도전하기</button>
             </div>
         </div>
@@ -269,10 +289,8 @@
         let currentUser = null;
         let currentUserRole = 'student'; 
         let currentAttempts = 0;
-        
-        // 랭킹 필터 상태 변수
         window.currentPeriodMode = 'today'; 
-        window.currentSortMode = 'score'; // score, time, firstTry
+        window.currentSortMode = 'score';
 
         let sys = { pressure: 180 };
         let filters = { A: { level: 100, press: 180, IN: 100, OUT: 100, VENT: 0, DRAIN: 0 }, B: { level: 0, press: 0, IN: 0, OUT: 0, VENT: 0, DRAIN: 0 }};
@@ -288,7 +306,6 @@
             return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
         }
 
-        // 점수 계산 공식 (10000점 만점 기준)
         function calculateScore(time, attemptNum) {
             let score = 10000 - (time * 10) - ((attemptNum - 1) * 100);
             return score > 0 ? score : 0;
@@ -361,7 +378,6 @@
             window.startSimulationSession();
         };
 
-        // UI 버튼 갱신 및 랭킹 조회
         window.changeFilter = (period, sort) => {
             window.currentPeriodMode = period;
             window.currentSortMode = sort;
@@ -390,23 +406,18 @@
                 
                 querySnapshot.forEach((doc) => {
                     let data = doc.data();
-                    // 기간 필터 적용
                     if(period === 'today' && data.date !== todayStr) return;
-                    // 1회차 필터 적용
                     if(sort === 'firstTry' && data.attemptNum !== 1) return;
                     
                     data.score = calculateScore(data.time, data.attemptNum);
                     records.push(data); 
                 });
                 
-                // 정렬 방식 적용
                 records.sort((a, b) => {
                     if (sort === 'score') {
-                        // 1. 점수 내림차순 -> 2. 점수 같으면 시간 짧은순
                         if(b.score === a.score) return a.time - b.time;
                         return b.score - a.score;
                     } else {
-                        // 시간 오름차순 (가장 빠른 조작, 1회차 최단기록 공통)
                         if(a.time === b.time) return a.attemptNum - b.attemptNum;
                         return a.time - b.time;
                     }
@@ -615,7 +626,6 @@
                     });
                 }
 
-                // 현재 점수 기준 순위 계산
                 let myRank = 0;
                 let totalRecords = 0;
                 try {
